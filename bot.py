@@ -1,12 +1,10 @@
 import os
 import openai
-import traceback
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes, ConversationHandler
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-openai.api_key = os.getenv("DEEPSEEK_API_KEY")
-openai.base_url = "https://api.deepseek.com/v1"
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 CHOOSE_ACTION, ASK_QUESTION, ASK_MAP_TYPE, ASK_MAP_QUESTIONS = range(4)
 
@@ -40,24 +38,17 @@ async def choose_action(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def ask_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_question = update.message.text
 
-    # Явное логирование
-    print("Получен вопрос от пользователя:", user_question)
-    print("Ключ API:", openai.api_key)
-    print("URL API:", openai.base_url)
-
     try:
         response = openai.ChatCompletion.create(
-            model="deepseek-chat",
+            model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "Ты опытный психолог. Отвечай спокойно, мягко и профессионально."},
-                {"role": "user", "content": user_question},
-            ],
-            stream=False
+                {"role": "user", "content": user_question}
+            ]
         )
         answer = response.choices[0].message.content.strip()
     except Exception as e:
-        print("Ошибка DeepSeek:", traceback.format_exc())
-        answer = "Что-то пошло не так. Попробуй через минуту снова прислать мне свой вопрос."
+        answer = "Произошла ошибка при генерации ответа. Попробуй позже."
 
     await update.message.reply_text(f"🔍 Ответ психолога:\n\n{answer}")
     return CHOOSE_ACTION
@@ -104,7 +95,7 @@ async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         text = "\n\n".join(f"{q}\n➡ {a}" for q, a in zip(questions, answers))
         await update.message.reply_text("Спасибо! Карта отправлена на модерацию.")
-        admin_chat_id = 196035876
+        admin_chat_id = "ВАШ_TG_ID"
         await context.bot.send_message(chat_id=admin_chat_id, text=f"🗺️ Новая психологическая карта:\n\n{text}")
         return CHOOSE_ACTION
 
