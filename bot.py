@@ -95,7 +95,7 @@ async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         text = "\n\n".join(f"{q}\n➡ {a}" for q, a in zip(questions, answers))
         await update.message.reply_text("Спасибо! Карта отправлена на модерацию.")
-        admin_chat_id = "ВАШ_TG_ID"
+        admin_chat_id = "196035876"
         await context.bot.send_message(chat_id=admin_chat_id, text=f"🗺️ Новая психологическая карта:\n\n{text}")
         return CHOOSE_ACTION
 
