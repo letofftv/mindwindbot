@@ -1,10 +1,11 @@
 import os
 import openai
+from openai import AsyncOpenAI
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes, ConversationHandler
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-openai.api_key = os.getenv("OPENAI_API_KEY")
+openai_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 CHOOSE_ACTION, ASK_QUESTION, ASK_MAP_TYPE, ASK_MAP_QUESTIONS = range(4)
 
@@ -39,7 +40,7 @@ async def ask_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_question = update.message.text
 
     try:
-        response = openai.ChatCompletion.create(
+        response = await openai_client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "Ты опытный психолог. Отвечай спокойно, мягко и профессионально."},
