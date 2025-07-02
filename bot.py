@@ -1,10 +1,11 @@
 import os
 import openai
+from openai import AsyncOpenAI
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes, ConversationHandler
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-openai.api_key = os.getenv("OPENAI_API_KEY")
+openai_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 CHOOSE_ACTION, ASK_QUESTION, ASK_MAP_TYPE, ASK_MAP_QUESTIONS = range(4)
 
@@ -39,7 +40,7 @@ async def ask_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_question = update.message.text
 
     try:
-        response = openai.ChatCompletion.create(
+        response = await openai_client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "Ты опытный психолог. Отвечай спокойно, мягко и профессионально."},
@@ -95,7 +96,7 @@ async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         text = "\n\n".join(f"{q}\n➡ {a}" for q, a in zip(questions, answers))
         await update.message.reply_text("Спасибо! Карта отправлена на модерацию.")
-        admin_chat_id = "ВАШ_TG_ID"
+        admin_chat_id = 196035876
         await context.bot.send_message(chat_id=admin_chat_id, text=f"🗺️ Новая психологическая карта:\n\n{text}")
         return CHOOSE_ACTION
 
